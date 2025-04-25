@@ -2,10 +2,10 @@ from rest_framework import serializers
 from .models import *
 
 
-class CitySerializer(serializers.ModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         # Модель, которую мы сериализуем
-        model = City
+        model = Company
         # Поля, которые мы сериализуем (Все поля)
         fields = '__all__'
 
@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class VacancySerializer(serializers.ModelSerializer):
-    cities = CitySerializer(read_only=True, many=True)
+    companies = CompanySerializer(read_only=True, many=True)
     employer = UserSerializer(read_only=True, many=False)
     moderator = UserSerializer(read_only=True, many=False)
 

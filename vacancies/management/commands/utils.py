@@ -1,7 +1,5 @@
 import random
-from datetime import datetime, timedelta
-from django.utils import timezone
-
+from datetime import datetime, timedelta, timezone
 
 def random_date():
     now = datetime.now(tz=timezone.utc)

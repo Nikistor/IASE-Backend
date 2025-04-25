@@ -1,12 +1,11 @@
 from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django.utils import timezone
 
-
-class City(models.Model):
+class Company(models.Model):
     STATUS_CHOICES = (
         (1, 'Действует'),
         (2, 'Удалена'),
@@ -20,7 +19,7 @@ class City(models.Model):
     square = models.IntegerField(verbose_name="Площадь", null=True, blank=True)
 
     status = models.IntegerField(choices=STATUS_CHOICES, default=1, verbose_name="Статус")
-    image = models.ImageField(upload_to="cities", default="cities/default.jpg", verbose_name="Фото", null=True, blank=True)
+    image = models.ImageField(upload_to="companies", default="companies/default.jpg", verbose_name="Фото", null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -88,7 +87,6 @@ class Vacancy(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название")
 
     status = models.IntegerField(choices=STATUS_CHOICES, default=1, verbose_name="Статус")
-    # date_created = models.DateTimeField(default=datetime.now(tz=timezone.utc), verbose_name="Дата создания")
     date_created = models.DateTimeField(default=timezone.now, verbose_name="Дата создания")
     date_formation = models.DateTimeField(verbose_name="Дата формирования", blank=True, null=True)
     date_complete = models.DateTimeField(verbose_name="Дата завершения", blank=True, null=True)
@@ -96,7 +94,7 @@ class Vacancy(models.Model):
     employer = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Пользователь", related_name='employer', null=True)
     moderator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Модератор", related_name='moderator', blank=True, null=True)
 
-    cities = models.ManyToManyField(City, verbose_name="Города", null=True)
+    companies = models.ManyToManyField(Company, verbose_name="Города", null=True)
 
     def __str__(self):
         return self.name

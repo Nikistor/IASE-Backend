@@ -69,7 +69,7 @@ WSGI_APPLICATION = 'work.wsgi.application'
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "vacancies",
+        "NAME": "finance",
         'USER': 'nikita',
         'PASSWORD': 'nikita'
     }
@@ -129,6 +129,8 @@ CORS_ALLOW_HEADERS = [
     "Content-Type",
 ]
 
+AWS_QUERYSTRING_AUTH = False
+
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 
@@ -153,6 +155,6 @@ CACHES = {
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_STORAGE_BUCKET_NAME = 'images'
-AWS_ACCESS_KEY_ID = 'dlBdiS6kYDZDHEWtTkwQ'
-AWS_SECRET_ACCESS_KEY = 'k32A7wAa3xcIoFdmZmG3BIZpZGelSR8ErxgzngLN'
+AWS_ACCESS_KEY_ID = 'HOQXUnNpBHiyJmF0TUla'
+AWS_SECRET_ACCESS_KEY = 'jbmf6mxxt4ZMfDqOgH5tlU6kXLX4bKU8NovazwCj'
 AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'

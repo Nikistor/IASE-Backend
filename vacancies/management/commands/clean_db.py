@@ -4,6 +4,6 @@ from vacancies.models import *
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        City.objects.all().delete()
+        Company.objects.all().delete()
         Vacancy.objects.all().delete()
         CustomUser.objects.all().delete()

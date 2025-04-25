@@ -32,7 +32,7 @@ def get_draft_vacancy_id(request):
 
 
 @api_view(["GET"])
-def search_city(request):
+def search_company(request):
     """
     Возвращает список городов
     """
@@ -41,51 +41,51 @@ def search_city(request):
     name = request.GET.get('query')
 
     # Получение данные после запроса с БД (через ORM)
-    city = City.objects.filter(status=1)
+    company = Company.objects.filter(status=1)
 
     # Применим фильтры на основе параметров запроса, если они предоставлены
     if name:
-        city = city.filter(name__icontains=name)
+        company = company.filter(name__icontains=name)
 
-    serializer = CitySerializer(city, many=True)
+    serializer = CompanySerializer(company, many=True)
 
     draft_vacancy = get_draft_vacancy_id(request)
 
     resp = {
         "draft_vacancy_id": draft_vacancy.pk if draft_vacancy else None,
-        "cities": serializer.data
+        "companies": serializer.data
     }
 
     return Response(resp)
 
 
 @api_view(['GET'])
-def get_city_by_id(request, city_id):
+def get_company_by_id(request, company_id):
     """
     Возвращает информацию о конкретном городе
     """
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     # Получение данные после запроса с БД (через ORM)
-    city = City.objects.get(pk=city_id)
+    company = Company.objects.get(pk=company_id)
 
-    serializer = CitySerializer(city, many=False)
+    serializer = CompanySerializer(company, many=False)
     return Response(serializer.data)
 
 
 @api_view(['PUT'])
 @permission_classes([IsModerator])
-def update_city(request, city_id):
+def update_company(request, company_id):
     """
     Обновляет информацию о городе
     """
 
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    city = City.objects.get(pk=city_id)
-    serializer = CitySerializer(city, data=request.data, partial=True)
+    company = Company.objects.get(pk=company_id)
+    serializer = CompanySerializer(company, data=request.data, partial=True)
 
     if serializer.is_valid():
         serializer.save()
@@ -96,39 +96,39 @@ def update_city(request, city_id):
 
 @api_view(["POST"])
 @permission_classes([IsModerator])
-def create_city(request):
+def create_company(request):
     """
     Добавляет новый город
     """
-    city = City.objects.create()
+    company = Company.objects.create()
 
-    serializer = CitySerializer(city)
+    serializer = CompanySerializer(company)
 
     return Response(serializer.data)
 
 
 @api_view(["DELETE"])
 @permission_classes([IsModerator])
-def delete_city(request, city_id):
+def delete_company(request, company_id):
     """
     Удаляет город
     """
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    city = City.objects.get(pk=city_id)
-    city.status = 2
-    city.save()
+    company = Company.objects.get(pk=company_id)
+    company.status = 2
+    company.save()
 
-    cities = City.objects.filter(status=1)
-    serializer = CitySerializer(cities, many=True)
+    companies = Company.objects.filter(status=1)
+    serializer = CompanySerializer(companies, many=True)
 
     return Response(serializer.data)
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def add_city_to_vacancy(request, city_id):
+def add_company_to_vacancy(request, company_id):
     """
     Добавляет город в вакансию
     """
@@ -136,10 +136,10 @@ def add_city_to_vacancy(request, city_id):
     payload = get_jwt_payload(token)
     user_id = payload["user_id"]
 
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    city = City.objects.get(pk=city_id)
+    company = Company.objects.get(pk=company_id)
 
     vacancy = Vacancy.objects.filter(status=1).last()
 
@@ -148,7 +148,7 @@ def add_city_to_vacancy(request, city_id):
 
     vacancy.name = "Вакансия №" + str(vacancy.pk)
     vacancy.employer = CustomUser.objects.get(pk=user_id)
-    vacancy.cities.add(city)
+    vacancy.companies.add(company)
     vacancy.save()
 
     serializer = VacancySerializer(vacancy)
@@ -157,29 +157,29 @@ def add_city_to_vacancy(request, city_id):
 
 
 @api_view(["GET"])
-def get_city_image(request, city_id):
+def get_company_image(request, company_id):
     """
     Возвращает фото города
     """
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    city = City.objects.get(pk=city_id)
+    company = Company.objects.get(pk=company_id)
 
-    return HttpResponse(city.image, content_type="image/png")
+    return HttpResponse(company.image, content_type="image/jpg")
 
 
 @api_view(["PUT"])
 @permission_classes([IsModerator])
-def update_city_image(request, city_id):
+def update_company_image(request, company_id):
     """
     Обновляет фото города
     """
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    city = City.objects.get(pk=city_id)
-    serializer = CitySerializer(city, data=request.data, many=False, partial=True)
+    company = Company.objects.get(pk=company_id)
+    serializer = CompanySerializer(company, data=request.data, many=False, partial=True)
 
     if serializer.is_valid():
         serializer.save()
@@ -362,18 +362,18 @@ def delete_vacancy(request, vacancy_id):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_city_from_vacancy(request, vacancy_id, city_id):
+def delete_company_from_vacancy(request, vacancy_id, company_id):
     """
     Удаляет город из вакансии
     """
     if not Vacancy.objects.filter(pk=vacancy_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if not City.objects.filter(pk=city_id).exists():
+    if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     vacancy = Vacancy.objects.get(pk=vacancy_id)
-    vacancy.cities.remove(City.objects.get(pk=city_id))
+    vacancy.companies.remove(Company.objects.get(pk=company_id))
     vacancy.save()
 
     return Response(status=status.HTTP_200_OK)
