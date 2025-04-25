@@ -214,7 +214,7 @@ def get_vacancies(request):
         # vacancies = vacancies.filter(date_formation__lte=datetime.strptime(date_end, "%Y-%m-%d").date())
         vacancies = vacancies.filter(date_formation__lte=parse_datetime(date_end))
 
-    serializer = VacancySerializer(vacancies, many=True)
+    serializer = VacancySerializer(vacancies, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -228,28 +228,26 @@ def get_vacancy_by_id(request, vacancy_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     vacancy = Vacancy.objects.get(pk=vacancy_id)
-    serializer = VacancySerializer(vacancy)
+    serializer = VacancySerializer(vacancy, context={'request': request})
 
     return Response(serializer.data)
 
-
-@api_view(["PUT"])
+@api_view(["PUT", "PATCH"])  # Разрешаем оба метода
 @permission_classes([IsAuthenticated])
 def update_vacancy(request, vacancy_id):
-    """
-    Обновляет информацию о вакансии
-    """
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        vacancy = Vacancy.objects.get(pk=vacancy_id)
+    except Vacancy.DoesNotExist:
+        return Response({"detail": "Вакансия не найдена."}, status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
-    serializer = VacancySerializer(vacancy, data=request.data, many=False, partial=True)
+    # Для PATCH используем partial=True, для PUT — нет
+    serializer = VacancySerializer(vacancy, data=request.data, partial=(request.method == "PATCH"))
 
     if serializer.is_valid():
         serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    return Response(serializer.data)
-
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @permission_classes([IsRemoteService])

@@ -95,6 +95,7 @@ class Vacancy(models.Model):
     moderator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Модератор", related_name='moderator', blank=True, null=True)
 
     companies = models.ManyToManyField(Company, verbose_name="Города", null=True)
+    report = models.FileField(upload_to='reports/', blank=True, null=True, verbose_name="Отчет")
 
     def __str__(self):
         return self.name

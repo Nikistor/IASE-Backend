@@ -20,13 +20,34 @@ class VacancySerializer(serializers.ModelSerializer):
     companies = CompanySerializer(read_only=True, many=True)
     employer = UserSerializer(read_only=True, many=False)
     moderator = UserSerializer(read_only=True, many=False)
+    report_url = serializers.SerializerMethodField()
 
     class Meta:
-        # Модель, которую мы сериализуем
         model = Vacancy
-        # Поля, которые мы сериализуем (Все поля)
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'status',
+            'date_created',
+            'date_formation',
+            'date_complete',
+            'bankrupt',
+            'employer',
+            'moderator',
+            'companies',
+            'report',
+            'report_url',
+        ]
+        read_only_fields = ['id', 'date_created']
 
+    def get_report_url(self, obj):
+        if obj.report:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.report.url)
+            # Если request отсутствует, вернуть относительный URL
+            return obj.report.url
+        return None
 
 class VacanciesSerializer(serializers.ModelSerializer):
     employer = UserSerializer(read_only=True, many=False)

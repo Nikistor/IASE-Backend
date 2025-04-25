@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -112,6 +113,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# MEDIA_URL = '/media/'  # URL, по которому будут доступны медиафайлы
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'reports')  # Путь к папке с медиафайлами
+
+# BASE_URL = "/work/"  # Базовый путь вашего сервера
+
+# MEDIA_URL = f"{BASE_URL}media/"
+# STATIC_URL = f"{BASE_URL}static/"
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -127,6 +139,15 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "Authorization",
     "Content-Type",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 AWS_QUERYSTRING_AUTH = False
@@ -158,3 +179,5 @@ AWS_STORAGE_BUCKET_NAME = 'images'
 AWS_ACCESS_KEY_ID = 'HOQXUnNpBHiyJmF0TUla'
 AWS_SECRET_ACCESS_KEY = 'jbmf6mxxt4ZMfDqOgH5tlU6kXLX4bKU8NovazwCj'
 AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'
+
+
