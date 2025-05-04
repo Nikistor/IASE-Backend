@@ -12,11 +12,20 @@ class Company(models.Model):
     )
 
     name = models.CharField(max_length=100, verbose_name="Название")
-    description = models.TextField(verbose_name="Описание", null=True, blank=True)
-    foundation_date = models.IntegerField(verbose_name="Дата основания", null=True, blank=True)
-    grp = models.FloatField(verbose_name="Население (млн)", null=True, blank=True)
-    climate = models.CharField(max_length=255, verbose_name="Климат", null=True, blank=True)
-    square = models.IntegerField(verbose_name="Площадь", null=True, blank=True)
+    ticker = models.CharField(verbose_name="Тикер", null=True, blank=True)
+    industry = models.CharField(verbose_name="Отрасль", null=True, blank=True)
+    capital = models.IntegerField(verbose_name="Капитализация (млрд руб)", null=True, blank=True)
+    enterprise_value = models.IntegerField(verbose_name="Стоимость компании (млрд руб)", null=True, blank=True)
+    revenue = models.IntegerField(verbose_name="Выручка (млрд руб)", null=True, blank=True)
+    net_profit = models.FloatField(verbose_name="Чистая прибыль (млрд руб)", null=True, blank=True)
+    pe = models.FloatField(verbose_name="P/E", null=True, blank=True)
+    ps = models.FloatField(verbose_name="P/S", null=True, blank=True)
+    pb = models.FloatField(verbose_name="P/B", null=True, blank=True)
+    ev_ebitda = models.FloatField(verbose_name="EV/EBITDA", null=True, blank=True)
+    ebitda_margin = models.FloatField(verbose_name="Рентабельность, EBITDA", null=True, blank=True)
+    debt_ebitda = models.FloatField(verbose_name="долг/EBITDA", null=True, blank=True)
+    report = models.CharField(max_length=255, verbose_name="Отчет", null=True, blank=True)
+    year = models.IntegerField(verbose_name="Год отчетности", null=True, blank=True)
 
     status = models.IntegerField(choices=STATUS_CHOICES, default=1, verbose_name="Статус")
     image = models.ImageField(upload_to="companies", default="companies/default.jpg", verbose_name="Фото", null=True, blank=True)
@@ -25,8 +34,8 @@ class Company(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "Город"
-        verbose_name_plural = "Города"
+        verbose_name = "Компания"
+        verbose_name_plural = "Компании"
 
 
 class CustomUserManager(BaseUserManager):

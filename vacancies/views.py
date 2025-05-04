@@ -34,7 +34,7 @@ def get_draft_vacancy_id(request):
 @api_view(["GET"])
 def search_company(request):
     """
-    Возвращает список городов
+    Возвращает список компании
     """
 
     # Получим параметры запроса из URL
@@ -62,7 +62,7 @@ def search_company(request):
 @api_view(['GET'])
 def get_company_by_id(request, company_id):
     """
-    Возвращает информацию о конкретном городе
+    Возвращает информацию о конкретном компании
     """
     if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -78,7 +78,7 @@ def get_company_by_id(request, company_id):
 @permission_classes([IsModerator])
 def update_company(request, company_id):
     """
-    Обновляет информацию о городе
+    Обновляет информацию о компании
     """
 
     if not Company.objects.filter(pk=company_id).exists():
@@ -98,7 +98,7 @@ def update_company(request, company_id):
 @permission_classes([IsModerator])
 def create_company(request):
     """
-    Добавляет новый город
+    Добавляет новую компанию
     """
     company = Company.objects.create()
 
@@ -111,7 +111,7 @@ def create_company(request):
 @permission_classes([IsModerator])
 def delete_company(request, company_id):
     """
-    Удаляет город
+    Удаляет компанию
     """
     if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -130,7 +130,7 @@ def delete_company(request, company_id):
 @permission_classes([IsAuthenticated])
 def add_company_to_vacancy(request, company_id):
     """
-    Добавляет город в вакансию
+    Добавляет компанию в заявку
     """
     token = get_access_token(request)
     payload = get_jwt_payload(token)
@@ -146,7 +146,7 @@ def add_company_to_vacancy(request, company_id):
     if vacancy is None:
         vacancy = Vacancy.objects.create(date_created=timezone.now(), date_formation=None, date_complete=None)
 
-    vacancy.name = "Вакансия №" + str(vacancy.pk)
+    vacancy.name = "Заявка №" + str(vacancy.pk)
     vacancy.employer = CustomUser.objects.get(pk=user_id)
     vacancy.companies.add(company)
     vacancy.save()
@@ -159,7 +159,7 @@ def add_company_to_vacancy(request, company_id):
 @api_view(["GET"])
 def get_company_image(request, company_id):
     """
-    Возвращает фото города
+    Возвращает фото компании
     """
     if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -173,7 +173,7 @@ def get_company_image(request, company_id):
 @permission_classes([IsModerator])
 def update_company_image(request, company_id):
     """
-    Обновляет фото города
+    Обновляет фото компании
     """
     if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -222,7 +222,7 @@ def get_vacancies(request):
 @permission_classes([IsAuthenticated])
 def get_vacancy_by_id(request, vacancy_id):
     """
-    Возвращает информацию о конкретной вакансии
+    Возвращает информацию о конкретной заявки
     """
     if not Vacancy.objects.filter(pk=vacancy_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -238,7 +238,7 @@ def update_vacancy(request, vacancy_id):
     try:
         vacancy = Vacancy.objects.get(pk=vacancy_id)
     except Vacancy.DoesNotExist:
-        return Response({"detail": "Вакансия не найдена."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": "Заявка не найдена."}, status=status.HTTP_404_NOT_FOUND)
 
     # Для PATCH используем partial=True, для PUT — нет
     serializer = VacancySerializer(vacancy, data=request.data, partial=(request.method == "PATCH"))
@@ -276,7 +276,7 @@ def calculate_vacancy_bankrupt(vacancy_id):
 @permission_classes([IsAuthenticated])
 def update_status_user(request, vacancy_id):
     """
-    Пользователь обновляет информацию о вакансии
+    Пользователь обновляет информацию о заявки
     """
     if not Vacancy.objects.filter(pk=vacancy_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -303,7 +303,7 @@ def update_status_user(request, vacancy_id):
 @permission_classes([IsModerator])
 def update_status_admin(request, vacancy_id):
     """
-    Модератор обновляет информацию о вакансии
+    Модератор обновляет информацию о заявке
     """
     token = get_access_token(request)
     payload = get_jwt_payload(token)
@@ -342,7 +342,7 @@ def update_status_admin(request, vacancy_id):
 @permission_classes([IsAuthenticated])
 def delete_vacancy(request, vacancy_id):
     """
-    Удаляет вакансию
+    Удаляет заявку
     """
     if not Vacancy.objects.filter(pk=vacancy_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -362,7 +362,7 @@ def delete_vacancy(request, vacancy_id):
 @permission_classes([IsAuthenticated])
 def delete_company_from_vacancy(request, vacancy_id, company_id):
     """
-    Удаляет город из вакансии
+    Удаляет компанию из заявки
     """
     if not Vacancy.objects.filter(pk=vacancy_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
