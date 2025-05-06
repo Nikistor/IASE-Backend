@@ -24,7 +24,7 @@ class Company(models.Model):
     ev_ebitda = models.FloatField(verbose_name="EV/EBITDA", null=True, blank=True)
     ebitda_margin = models.FloatField(verbose_name="Рентабельность, EBITDA", null=True, blank=True)
     debt_ebitda = models.FloatField(verbose_name="долг/EBITDA", null=True, blank=True)
-    report = models.CharField(max_length=255, verbose_name="Отчет", null=True, blank=True)
+    report = models.CharField(max_length=255, verbose_name="Отчетность", null=True, blank=True)
     year = models.IntegerField(verbose_name="Год отчетности", null=True, blank=True)
 
     status = models.IntegerField(choices=STATUS_CHOICES, default=1, verbose_name="Статус")
@@ -101,7 +101,7 @@ class Vacancy(models.Model):
     date_complete = models.DateTimeField(verbose_name="Дата завершения", blank=True, null=True)
 
     employer = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Пользователь", related_name='employer', null=True)
-    moderator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Модератор", related_name='moderator', blank=True, null=True)
+    moderator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Админ", related_name='moderator', blank=True, null=True)
 
     companies = models.ManyToManyField(Company, verbose_name="Города", null=True)
     report = models.FileField(upload_to='reports/', blank=True, null=True, verbose_name="Отчет")

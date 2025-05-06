@@ -303,7 +303,7 @@ def update_status_user(request, vacancy_id):
 @permission_classes([IsModerator])
 def update_status_admin(request, vacancy_id):
     """
-    Модератор обновляет информацию о заявке
+    Аналитик обновляет информацию о заявке
     """
     token = get_access_token(request)
     payload = get_jwt_payload(token)

@@ -107,7 +107,7 @@ def add_companies():
         image="companies/5.jpg"
     )
 
-    print("Услуги добавлены")
+    print("Компании добавлены")
 
 
 def add_vacancies():
