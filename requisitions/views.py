@@ -17,18 +17,18 @@ from .models import *
 access_token_lifetime = settings.JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
 
 
-def get_draft_vacancy_id(request):
+def get_draft_requisition_id(request):
     user = identity_user(request)
 
     if user is None:
         return None
 
-    vacancy = Vacancy.objects.filter(employer_id=user.pk).filter(status=1).first()
+    requisition = Requisition.objects.filter(employer_id=user.pk).filter(status=1).first()
 
-    if vacancy is None:
+    if requisition is None:
         return None
 
-    return vacancy
+    return requisition
 
 
 @api_view(["GET"])
@@ -49,10 +49,10 @@ def search_company(request):
 
     serializer = CompanySerializer(company, many=True)
 
-    draft_vacancy = get_draft_vacancy_id(request)
+    draft_requisition = get_draft_requisition_id(request)
 
     resp = {
-        "draft_vacancy_id": draft_vacancy.pk if draft_vacancy else None,
+        "draft_requisition_id": draft_requisition.pk if draft_requisition else None,
         "companies": serializer.data
     }
 
@@ -128,7 +128,7 @@ def delete_company(request, company_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def add_company_to_vacancy(request, company_id):
+def add_company_to_requisition(request, company_id):
     """
     Добавляет компанию в заявку
     """
@@ -141,17 +141,17 @@ def add_company_to_vacancy(request, company_id):
 
     company = Company.objects.get(pk=company_id)
 
-    vacancy = Vacancy.objects.filter(status=1).last()
+    requisition = Requisition.objects.filter(status=1).last()
 
-    if vacancy is None:
-        vacancy = Vacancy.objects.create(date_created=timezone.now(), date_formation=None, date_complete=None)
+    if requisition is None:
+        requisition = Requisition.objects.create(date_created=timezone.now(), date_formation=None, date_complete=None)
 
-    vacancy.name = "Заявка №" + str(vacancy.pk)
-    vacancy.employer = CustomUser.objects.get(pk=user_id)
-    vacancy.companies.add(company)
-    vacancy.save()
+    requisition.name = "Заявка №" + str(requisition.pk)
+    requisition.employer = CustomUser.objects.get(pk=user_id)
+    requisition.companies.add(company)
+    requisition.save()
 
-    serializer = VacancySerializer(vacancy)
+    serializer = RequisitionSerializer(requisition)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -189,7 +189,7 @@ def update_company_image(request, company_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_vacancies(request):
+def get_requisitions(request):
     token = get_access_token(request)
     payload = get_jwt_payload(token)
     user = CustomUser.objects.get(pk=payload["user_id"])
@@ -198,50 +198,50 @@ def get_vacancies(request):
     date_start = request.GET.get("date_start")
     date_end = request.GET.get("date_end")
 
-    vacancies = Vacancy.objects.exclude(status__in=[1, 5])
+    requisitions = Requisition.objects.exclude(status__in=[1, 5])
 
     if not user.is_moderator:
-        vacancies = vacancies.filter(employer_id=user.pk)
+        requisitions = requisitions.filter(employer_id=user.pk)
 
     if status > 0:
-        vacancies = vacancies.filter(status=status)
+        requisitions = requisitions.filter(status=status)
 
     if date_start:
-        # vacancies = vacancies.filter(date_formation__gte=datetime.strptime(date_start, "%Y-%m-%d").date())
-        vacancies = vacancies.filter(date_formation__gte=parse_datetime(date_start))
+        # requisitions = requisitions.filter(date_formation__gte=datetime.strptime(date_start, "%Y-%m-%d").date())
+        requisitions = requisitions.filter(date_formation__gte=parse_datetime(date_start))
 
     if date_end:
-        # vacancies = vacancies.filter(date_formation__lte=datetime.strptime(date_end, "%Y-%m-%d").date())
-        vacancies = vacancies.filter(date_formation__lte=parse_datetime(date_end))
+        # requisitions = requisitions.filter(date_formation__lte=datetime.strptime(date_end, "%Y-%m-%d").date())
+        requisitions = requisitions.filter(date_formation__lte=parse_datetime(date_end))
 
-    serializer = VacancySerializer(vacancies, many=True, context={'request': request})
+    serializer = RequisitionSerializer(requisitions, many=True, context={'request': request})
     return Response(serializer.data)
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_vacancy_by_id(request, vacancy_id):
+def get_requisition_by_id(request, requisition_id):
     """
     Возвращает информацию о конкретной заявки
     """
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
-    serializer = VacancySerializer(vacancy, context={'request': request})
+    requisition = Requisition.objects.get(pk=requisition_id)
+    serializer = RequisitionSerializer(requisition, context={'request': request})
 
     return Response(serializer.data)
 
 @api_view(["PUT", "PATCH"])  # Разрешаем оба метода
 @permission_classes([IsAuthenticated])
-def update_vacancy(request, vacancy_id):
+def update_requisition(request, requisition_id):
     try:
-        vacancy = Vacancy.objects.get(pk=vacancy_id)
-    except Vacancy.DoesNotExist:
+        requisition = Requisition.objects.get(pk=requisition_id)
+    except Requisition.DoesNotExist:
         return Response({"detail": "Заявка не найдена."}, status=status.HTTP_404_NOT_FOUND)
 
     # Для PATCH используем partial=True, для PUT — нет
-    serializer = VacancySerializer(vacancy, data=request.data, partial=(request.method == "PATCH"))
+    serializer = RequisitionSerializer(requisition, data=request.data, partial=(request.method == "PATCH"))
 
     if serializer.is_valid():
         serializer.save()
@@ -251,12 +251,12 @@ def update_vacancy(request, vacancy_id):
 
 @api_view(["POST"])
 @permission_classes([IsRemoteService])
-def update_vacancy_bankrupt(request, vacancy_id):
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+def update_requisition_bankrupt(request, requisition_id):
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
-    serializer = VacancySerializer(vacancy, data=request.data, many=False, partial=True)
+    requisition = Requisition.objects.get(pk=requisition_id)
+    serializer = RequisitionSerializer(requisition, data=request.data, many=False, partial=True)
 
     if serializer.is_valid():
         serializer.save()
@@ -264,9 +264,9 @@ def update_vacancy_bankrupt(request, vacancy_id):
     return Response(serializer.data)
 
 
-def calculate_vacancy_bankrupt(vacancy_id):
+def calculate_requisition_bankrupt(requisition_id):
     data = {
-        "vacancy_id": vacancy_id
+        "requisition_id": requisition_id
     }
 
     requests.post("http://127.0.0.1:8080/calc_bankrupt/", json=data, timeout=3)
@@ -274,34 +274,34 @@ def calculate_vacancy_bankrupt(vacancy_id):
 
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
-def update_status_user(request, vacancy_id):
+def update_status_user(request, requisition_id):
     """
     Пользователь обновляет информацию о заявки
     """
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
+    requisition = Requisition.objects.get(pk=requisition_id)
 
-    if vacancy.status != 1:
+    if requisition.status != 1:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     else:
-        vacancy.status = 2
-        vacancy.save()
-        if vacancy.status == 2:
-            vacancy.date_formation = datetime.now()
-            vacancy.save()
+        requisition.status = 2
+        requisition.save()
+        if requisition.status == 2:
+            requisition.date_formation = datetime.now()
+            requisition.save()
 
-    calculate_vacancy_bankrupt(vacancy_id)
+    calculate_requisition_bankrupt(requisition_id)
 
-    serializer = VacancySerializer(vacancy)
+    serializer = RequisitionSerializer(requisition)
 
     return Response(serializer.data)
 
 
 @api_view(["PUT"])
 @permission_classes([IsModerator])
-def update_status_admin(request, vacancy_id):
+def update_status_admin(request, requisition_id):
     """
     Аналитик обновляет информацию о заявке
     """
@@ -309,70 +309,70 @@ def update_status_admin(request, vacancy_id):
     payload = get_jwt_payload(token)
     user_id = payload["user_id"]
 
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     request_status = int(request.data["status"])
     if request_status not in [3, 4]:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
+    requisition = Requisition.objects.get(pk=requisition_id)
 
-    if vacancy.status != 2:
+    if requisition.status != 2:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # vacancy.status = request_status
-    # vacancy.date_complete = datetime.now()
-    # vacancy.moderator = CustomUser.objects.get(pk=user_id)
-    # vacancy.save()
+    # requisition.status = request_status
+    # requisition.date_complete = datetime.now()
+    # requisition.moderator = CustomUser.objects.get(pk=user_id)
+    # requisition.save()
 
     if request_status == 4:
-        vacancy.date_complete = None
+        requisition.date_complete = None
     else:
-        vacancy.date_complete = datetime.now()
+        requisition.date_complete = datetime.now()
 
-    vacancy.status = request_status
-    vacancy.moderator = CustomUser.objects.get(pk=user_id)
-    vacancy.save()
+    requisition.status = request_status
+    requisition.moderator = CustomUser.objects.get(pk=user_id)
+    requisition.save()
 
-    serializer = VacancySerializer(vacancy, many=False)
+    serializer = RequisitionSerializer(requisition, many=False)
     return Response(serializer.data)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_vacancy(request, vacancy_id):
+def delete_requisition(request, requisition_id):
     """
     Удаляет заявку
     """
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
+    requisition = Requisition.objects.get(pk=requisition_id)
 
-    if vacancy.status != 1:
+    if requisition.status != 1:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    vacancy.status = 5
-    vacancy.save()
+    requisition.status = 5
+    requisition.save()
 
     return Response(status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def delete_company_from_vacancy(request, vacancy_id, company_id):
+def delete_company_from_requisition(request, requisition_id, company_id):
     """
     Удаляет компанию из заявки
     """
-    if not Vacancy.objects.filter(pk=vacancy_id).exists():
+    if not Requisition.objects.filter(pk=requisition_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if not Company.objects.filter(pk=company_id).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    vacancy = Vacancy.objects.get(pk=vacancy_id)
-    vacancy.companies.remove(Company.objects.get(pk=company_id))
-    vacancy.save()
+    requisition = Requisition.objects.get(pk=requisition_id)
+    requisition.companies.remove(Company.objects.get(pk=company_id))
+    requisition.save()
 
     return Response(status=status.HTTP_200_OK)
 

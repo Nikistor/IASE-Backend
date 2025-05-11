@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'vacancies',
+    'requisitions',
     'rest_framework',
     'corsheaders',
     'drf_yasg',
@@ -155,7 +155,7 @@ AWS_QUERYSTRING_AUTH = False
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 
-AUTH_USER_MODEL = 'vacancies.CustomUser'
+AUTH_USER_MODEL = 'requisitions.CustomUser'
 
 JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),

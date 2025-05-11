@@ -2,7 +2,7 @@ import random
 
 from django.core import management
 from django.core.management.base import BaseCommand
-from vacancies.models import *
+from requisitions.models import *
 from .utils import random_date, random_timedelta
 
 
@@ -110,7 +110,7 @@ def add_companies():
     print("Компании добавлены")
 
 
-def add_vacancies():
+def add_requisitions():
     users = CustomUser.objects.filter(is_moderator=False)
     moderators = CustomUser.objects.filter(is_superuser=True)
 
@@ -121,34 +121,34 @@ def add_vacancies():
     companies = Company.objects.all()
 
     for _ in range(30):
-        vacancy = Vacancy.objects.create()
-        vacancy.name = "Заявка №" + str(vacancy.pk)
-        vacancy.status = random.randint(2, 5)
+        requisition = Requisition.objects.create()
+        requisition.name = "Заявка №" + str(requisition.pk)
+        requisition.status = random.randint(2, 5)
 
-        if vacancy.status in [3, 4]:
-            if vacancy.status == 4:
-                vacancy.date_complete = None
+        if requisition.status in [3, 4]:
+            if requisition.status == 4:
+                requisition.date_complete = None
             else:
-                vacancy.date_complete = random_date()
+                requisition.date_complete = random_date()
 
-            if vacancy.date_complete:
-                vacancy.date_formation = vacancy.date_complete - random_timedelta()
+            if requisition.date_complete:
+                requisition.date_formation = requisition.date_complete - random_timedelta()
             else:
-                vacancy.date_formation = random_date()
+                requisition.date_formation = random_date()
 
-            vacancy.date_created = vacancy.date_formation - random_timedelta()
-            vacancy.moderator = random.choice(moderators)
-            vacancy.bankrupt = random.randint(0, 1)
+            requisition.date_created = requisition.date_formation - random_timedelta()
+            requisition.moderator = random.choice(moderators)
+            requisition.bankrupt = random.randint(0, 1)
         else:
-            vacancy.date_formation = random_date()
-            vacancy.date_created = vacancy.date_formation - random_timedelta()
+            requisition.date_formation = random_date()
+            requisition.date_created = requisition.date_formation - random_timedelta()
 
-        vacancy.employer = random.choice(users)
+        requisition.employer = random.choice(users)
 
         for i in range(random.randint(1, 5)):
-            vacancy.companies.add(random.choice(companies))
+            requisition.companies.add(random.choice(companies))
 
-        vacancy.save()
+        requisition.save()
 
     print("Заявки добавлены")
 
@@ -159,4 +159,4 @@ class Command(BaseCommand):
         management.call_command("add_users")
 
         add_companies()
-        add_vacancies()
+        add_requisitions()

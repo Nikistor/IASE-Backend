@@ -1,10 +1,10 @@
 -- Для подключения к БД
---\conn vacancy_city
+--\conn requisition_city
 
 -- Удаление таблицы
 --DROP TABLE city CASCADE;
---DROP TABLE vacancy CASCADE;
---DROP TABLE vacancycity CASCADE;
+--DROP TABLE requisition CASCADE;
+--DROP TABLE requisitioncity CASCADE;
 --DROP TABLE users CASCADE;
 
 -- Создание таблицы ГОРОД
@@ -21,13 +21,13 @@ CREATE TABLE city (
 );
 
 -- Создание таблицы ВАКАНСИЯ
-CREATE TABLE vacancy (
+CREATE TABLE requisition (
   id SERIAL PRIMARY KEY,
-  name_vacancy VARCHAR NOT NULL,
+  name_requisition VARCHAR NOT NULL,
   date_create DATE NOT NULL,
   date_form DATE NULL,
   date_close DATE NULL,
-  status_vacancy VARCHAR NOT NULL,
+  status_requisition VARCHAR NOT NULL,
   id_employer INT NULL,
   id_moderator INT NULL
 );
@@ -41,27 +41,27 @@ CREATE TABLE users (
 );
 
 -- Создание таблицы ВАКАНСИИГОРОДА
-CREATE TABLE vacancycity (
+CREATE TABLE requisitioncity (
   id SERIAL PRIMARY KEY,
   id_city INT NOT NULL,
-  id_vacancy INT NOT NULL
+  id_requisition INT NOT NULL
 );
 
 -- Связывание БД внешними ключами
-ALTER TABLE vacancycity
-ADD CONSTRAINT FR_vacancycity_of_city
+ALTER TABLE requisitioncity
+ADD CONSTRAINT FR_requisitioncity_of_city
     FOREIGN KEY (id_city) REFERENCES city (id);
 
-ALTER TABLE vacancycity
-ADD CONSTRAINT FR_vacancycity_of_vacancy
-    FOREIGN KEY (id_vacancy) REFERENCES vacancy (id);
+ALTER TABLE requisitioncity
+ADD CONSTRAINT FR_requisitioncity_of_requisition
+    FOREIGN KEY (id_requisition) REFERENCES requisition (id);
 
-ALTER TABLE vacancy
-ADD CONSTRAINT FR_vacancy_of_employer
+ALTER TABLE requisition
+ADD CONSTRAINT FR_requisition_of_employer
     FOREIGN KEY (id_employer) REFERENCES users (id);
 
-ALTER TABLE vacancy
-ADD CONSTRAINT FR_vacancy_of_moderator
+ALTER TABLE requisition
+ADD CONSTRAINT FR_requisition_of_moderator
     FOREIGN KEY (id_moderator) REFERENCES users (id);
 
 -- ПОЛЬЗОВАТЕЛЬ (Авторизация)
@@ -84,32 +84,32 @@ INSERT INTO city (name, foundation_date, grp, climate, square, status, descripti
 SELECT * FROM city;
 
 -- ВАКАНСИЯ (Заявки)
-INSERT INTO vacancy (name_vacancy, date_create, date_form, date_close, status_vacancy, id_employer, id_moderator) VALUES
+INSERT INTO requisition (name_requisition, date_create, date_form, date_close, status_requisition, id_employer, id_moderator) VALUES
     ('Вакансия №1', '01-01-2023', '10-01-2023', '01-03-2023', 'Введён', 1, 4),
     ('Вакансия №2', '20-05-2023', '01-06-2023', '01-08-2023', 'В работе', 2, 4),
     ('Вакансия №3', '24-09-2023', '05-10-2023', '30-11-2023', 'Завершён', 3, 4),
     ('Вакансия №4', '20-09-2023', '30-09-2023', '30-11-2023', 'Отменен', 1, 4),
     ('Вакансия №5', '20-09-2023', '30-09-2023', '30-11-2023', 'Удалён', 2, 4);
 -- Вывод таблицы вакансия
-SELECT * FROM vacancy;
+SELECT * FROM requisition;
 
 -- ВАКАНСИИГОРОДА (вспомогательная таблица М-М услуга-заявка)
-INSERT INTO vacancycity (id_city, id_vacancy) VALUES
+INSERT INTO requisitioncity (id_city, id_requisition) VALUES
     (1, 1),
     (2, 2),
     (3, 3),
     (4, 4),
     (5, 5);
 -- Вывод таблицы ВакансииГорода
-SELECT * FROM vacancycity;
+SELECT * FROM requisitioncity;
 
 -- Отображение городов, в котором статус "Закрыта"
 SELECT
     c.name
-FROM vacancycity as vc
+FROM requisitioncity as vc
 INNER JOIN city as c ON vc.id_city = c.id
-INNER JOIN vacancy v ON vc.id_vacancy = v.id
-WHERE v.status_vacancy = 'Закрыта';
+INNER JOIN requisition v ON vc.id_requisition = v.id
+WHERE v.status_requisition = 'Закрыта';
 
 -- Отображение городов, в котором статус "Доступен"
 SELECT * FROM city as C
@@ -121,20 +121,20 @@ SELECT
     c.foundation_date,
     c.square,
     c.description
-FROM vacancycity as vc
+FROM requisitioncity as vc
 INNER JOIN city as c ON vc.id_city = c.id
-INNER JOIN vacancy v ON vc.id_vacancy = v.id
+INNER JOIN requisition v ON vc.id_requisition = v.id
 WHERE c.name = 'Киров';
 
 -- Отображение всех вакансий, в котором была создана после 20.05.2023
-SELECT * FROM vacancy as v
+SELECT * FROM requisition as v
 WHERE v.date_create > '19-09-2023';
 
 -- Отображение всех городов
 SELECT * FROM users;
 SELECT * FROM city;
-SELECT * FROM vacancy;
-SELECT * FROM vacancycity;
+SELECT * FROM requisition;
+SELECT * FROM requisitioncity;
 
 -- Отображение индекса и статуса города
 SELECT id, status FROM city;

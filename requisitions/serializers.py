@@ -16,14 +16,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'email', 'is_moderator')
 
 
-class VacancySerializer(serializers.ModelSerializer):
+class RequisitionSerializer(serializers.ModelSerializer):
     companies = CompanySerializer(read_only=True, many=True)
     employer = UserSerializer(read_only=True, many=False)
     moderator = UserSerializer(read_only=True, many=False)
     report_url = serializers.SerializerMethodField()
 
     class Meta:
-        model = Vacancy
+        model = Requisition
         fields = [
             'id',
             'name',
@@ -49,13 +49,13 @@ class VacancySerializer(serializers.ModelSerializer):
             return obj.report.url
         return None
 
-class VacanciesSerializer(serializers.ModelSerializer):
+class RequisitionsSerializer(serializers.ModelSerializer):
     employer = UserSerializer(read_only=True, many=False)
     moderator = UserSerializer(read_only=True, many=False)
 
     class Meta:
         # Модель, которую мы сериализуем
-        model = Vacancy
+        model = Requisition
         # Поля, которые мы сериализуем (Все поля)
         fields = '__all__'
 

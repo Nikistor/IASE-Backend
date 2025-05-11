@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from vacancies.models import CustomUser
+from requisitions.models import CustomUser
 
 
 def add_users():

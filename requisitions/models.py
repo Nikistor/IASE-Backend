@@ -76,7 +76,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = "Пользователи"
 
 
-class Vacancy(models.Model):
+class Requisition(models.Model):
     STATUS_CHOICES = (
         (1, 'Введён'),
         (2, 'В работе'),
