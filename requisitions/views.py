@@ -1,18 +1,21 @@
+import os
 import requests
+import mimetypes
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.utils.dateparse import parse_datetime
+
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .jwt_helper import create_access_token
-from .utils import identity_user
-from .permissions import *
-from .serializers import *
-from .models import *
+from requisitions.jwt_helper import create_access_token
+from requisitions.utils import identity_user
+from requisitions.permissions import *
+from requisitions.serializers import *
+from requisitions.models import *
 
 access_token_lifetime = settings.JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
 
@@ -23,7 +26,9 @@ def get_draft_requisition_id(request):
     if user is None:
         return None
 
-    requisition = Requisition.objects.filter(employer_id=user.pk).filter(status=1).first()
+    requisition = (
+        Requisition.objects.filter(employer_id=user.pk).filter(status=1).first()
+    )
 
     if requisition is None:
         return None
@@ -38,7 +43,7 @@ def search_company(request):
     """
 
     # Получим параметры запроса из URL
-    name = request.GET.get('query')
+    name = request.GET.get("query")
 
     # Получение данные после запроса с БД (через ORM)
     company = Company.objects.filter(status=1)
@@ -53,13 +58,13 @@ def search_company(request):
 
     resp = {
         "draft_requisition_id": draft_requisition.pk if draft_requisition else None,
-        "companies": serializer.data
+        "companies": serializer.data,
     }
 
     return Response(resp)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_company_by_id(request, company_id):
     """
     Возвращает информацию о конкретном компании
@@ -74,7 +79,7 @@ def get_company_by_id(request, company_id):
     return Response(serializer.data)
 
 
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsModerator])
 def update_company(request, company_id):
     """
@@ -144,7 +149,9 @@ def add_company_to_requisition(request, company_id):
     requisition = Requisition.objects.filter(status=1).last()
 
     if requisition is None:
-        requisition = Requisition.objects.create(date_created=timezone.now(), date_formation=None, date_complete=None)
+        requisition = Requisition.objects.create(
+            date_created=timezone.now(), date_formation=None, date_complete=None
+        )
 
     requisition.name = "Заявка №" + str(requisition.pk)
     requisition.employer = CustomUser.objects.get(pk=user_id)
@@ -194,7 +201,7 @@ def get_requisitions(request):
     payload = get_jwt_payload(token)
     user = CustomUser.objects.get(pk=payload["user_id"])
 
-    status= int(request.GET.get("status", -1))
+    status = int(request.GET.get("status", -1))
     date_start = request.GET.get("date_start")
     date_end = request.GET.get("date_end")
 
@@ -208,13 +215,17 @@ def get_requisitions(request):
 
     if date_start:
         # requisitions = requisitions.filter(date_formation__gte=datetime.strptime(date_start, "%Y-%m-%d").date())
-        requisitions = requisitions.filter(date_formation__gte=parse_datetime(date_start))
+        requisitions = requisitions.filter(
+            date_formation__gte=parse_datetime(date_start)
+        )
 
     if date_end:
         # requisitions = requisitions.filter(date_formation__lte=datetime.strptime(date_end, "%Y-%m-%d").date())
         requisitions = requisitions.filter(date_formation__lte=parse_datetime(date_end))
 
-    serializer = RequisitionSerializer(requisitions, many=True, context={'request': request})
+    serializer = RequisitionSerializer(
+        requisitions, many=True, context={"request": request}
+    )
     return Response(serializer.data)
 
 
@@ -228,9 +239,10 @@ def get_requisition_by_id(request, requisition_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     requisition = Requisition.objects.get(pk=requisition_id)
-    serializer = RequisitionSerializer(requisition, context={'request': request})
+    serializer = RequisitionSerializer(requisition, context={"request": request})
 
     return Response(serializer.data)
+
 
 @api_view(["PUT", "PATCH"])  # Разрешаем оба метода
 @permission_classes([IsAuthenticated])
@@ -238,16 +250,21 @@ def update_requisition(request, requisition_id):
     try:
         requisition = Requisition.objects.get(pk=requisition_id)
     except Requisition.DoesNotExist:
-        return Response({"detail": "Заявка не найдена."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"detail": "Заявка не найдена."}, status=status.HTTP_404_NOT_FOUND
+        )
 
     # Для PATCH используем partial=True, для PUT — нет
-    serializer = RequisitionSerializer(requisition, data=request.data, partial=(request.method == "PATCH"))
+    serializer = RequisitionSerializer(
+        requisition, data=request.data, partial=(request.method == "PATCH")
+    )
 
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(["POST"])
 @permission_classes([IsRemoteService])
@@ -256,7 +273,9 @@ def update_requisition_bankrupt(request, requisition_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     requisition = Requisition.objects.get(pk=requisition_id)
-    serializer = RequisitionSerializer(requisition, data=request.data, many=False, partial=True)
+    serializer = RequisitionSerializer(
+        requisition, data=request.data, many=False, partial=True
+    )
 
     if serializer.is_valid():
         serializer.save()
@@ -265,9 +284,7 @@ def update_requisition_bankrupt(request, requisition_id):
 
 
 def calculate_requisition_bankrupt(requisition_id):
-    data = {
-        "requisition_id": requisition_id
-    }
+    data = {"requisition_id": requisition_id}
 
     requests.post("http://127.0.0.1:8080/calc_bankrupt/", json=data, timeout=3)
 
@@ -338,6 +355,7 @@ def update_status_admin(request, requisition_id):
     serializer = RequisitionSerializer(requisition, many=False)
     return Response(serializer.data)
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_requisition(request, requisition_id):
@@ -377,7 +395,7 @@ def delete_company_from_requisition(request, requisition_id, company_id):
     return Response(status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(method='post', request_body=UserLoginSerializer)
+@swagger_auto_schema(method="post", request_body=UserLoginSerializer)
 @api_view(["POST"])
 def login(request):
     serializer = UserLoginSerializer(data=request.data)
@@ -397,12 +415,14 @@ def login(request):
         "name": user.name,
         "email": user.email,
         "is_moderator": user.is_moderator,
-        "access_token": access_token
+        "access_token": access_token,
     }
 
     response = Response(user_data, status=status.HTTP_201_CREATED)
 
-    response.set_cookie('access_token', access_token, httponly=False, expires=access_token_lifetime)
+    response.set_cookie(
+        "access_token", access_token, httponly=False, expires=access_token_lifetime
+    )
 
     return response
 
@@ -419,14 +439,16 @@ def register(request):
     access_token = create_access_token(user.id)
 
     message = {
-        'message': 'User registered successfully',
-        'user_id': user.id,
-        "access_token": access_token
+        "message": "User registered successfully",
+        "user_id": user.id,
+        "access_token": access_token,
     }
 
     response = Response(message, status=status.HTTP_201_CREATED)
 
-    response.set_cookie('access_token', access_token, httponly=False, expires=access_token_lifetime)
+    response.set_cookie(
+        "access_token", access_token, httponly=False, expires=access_token_lifetime
+    )
 
     return response
 
@@ -442,6 +464,38 @@ def logout(request):
     message = {"message": "Вы успешно вышли из аккаунта"}
     response = Response(message, status=status.HTTP_200_OK)
 
-    response.delete_cookie('access_token')
+    response.delete_cookie("access_token")
 
     return response
+
+
+@api_view(["GET"])
+@permission_classes([])
+def download_requisition_report(request, requisition_id):
+    """
+    Возвращает отчет в виде файла
+    """
+    if not Requisition.objects.filter(pk=requisition_id).exists():
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    requisition = Requisition.objects.get(pk=requisition_id)
+
+    if not requisition.report:
+        return Response({"error": "Отчет не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+    file_path = os.path.join(settings.MEDIA_ROOT, requisition.report.name)
+
+    if not os.path.isfile(file_path):
+        return Response(
+            {"error": "Файл отчета не существует"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    file_mime, _ = mimetypes.guess_type(file_path)
+    file_mime = file_mime or "application/octet-stream"
+
+    return FileResponse(
+        open(file_path, "rb"),
+        content_type=file_mime,
+        as_attachment=True,
+        filename=os.path.basename(file_path),
+    )
