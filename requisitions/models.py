@@ -103,13 +103,13 @@ class Requisition(models.Model):
     employer = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Пользователь", related_name='employer', null=True)
     moderator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING, verbose_name="Админ", related_name='moderator', blank=True, null=True)
 
-    companies = models.ManyToManyField(Company, verbose_name="Города", null=True)
+    companies = models.ManyToManyField(Company, verbose_name="Компании", null=True)
     report = models.FileField(upload_to='reports/', blank=True, null=True, verbose_name="Отчет")
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = "Вакансия"
-        verbose_name_plural = "Вакансии"
+        verbose_name = "Заявка"
+        verbose_name_plural = "Заявка"
         ordering = ('-date_formation', )
