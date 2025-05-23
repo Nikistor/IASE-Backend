@@ -304,12 +304,10 @@ def update_status_user(request, requisition_id):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     else:
         requisition.status = 2
+        requisition.date_formation = datetime.now()
         requisition.save()
-        if requisition.status == 2:
-            requisition.date_formation = datetime.now()
-            requisition.save()
 
-    calculate_requisition_bankrupt(requisition_id)
+    # calculate_requisition_bankrupt(requisition_id)
 
     serializer = RequisitionSerializer(requisition)
 
@@ -467,6 +465,27 @@ def logout(request):
     response.delete_cookie("access_token")
 
     return response
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def check(request):
+    try:
+        user = identity_user(request)  # ваша функция извлечения пользователя из токена
+        if user is None:
+            return Response({}, status=status.HTTP_200_OK)
+
+        user_data = {
+            "user_id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "is_moderator": user.is_moderator,
+        }
+
+        return Response(user_data, status=status.HTTP_200_OK)
+
+    except Exception:
+        # На всякий случай: не выбрасываем 500, а просто возвращаем пустой ответ
+        return Response({}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

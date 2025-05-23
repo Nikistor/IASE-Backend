@@ -28,4 +28,5 @@ urlpatterns = [
     path("api/register/", register),
     path("api/login/", login),
     path("api/logout/", logout),
+    path("api/check/", check),
 ]
