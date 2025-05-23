@@ -11,16 +11,16 @@ def add_companies():
         name="Роснефть",
         ticker="ROSN",
         industry="Нефтегаз",
-        capital=3206,
-        enterprise_value=8170,
+        capital=4269,
+        enterprise_value=8812,
         revenue=4988,
-        net_profit=181.0,
-        pe=17.7,
-        ps=0.6,
-        pb=1.1,
-        ev_ebitda=6.4,
-        ebitda_margin=0.3,
-        debt_ebitda=3.9,
+        net_profit=418.0,
+        pe=10.2,
+        ps=0.86,
+        pb=1.4,
+        ev_ebitda=6.9,
+        ebitda_margin=0.2,
+        debt_ebitda=3.6,
         report="2016-МСФО",
         year=2016,
         status=1,
@@ -120,12 +120,15 @@ def add_requisitions():
 
     companies = Company.objects.all()
 
+    # Все статусы, кроме "Завершен" (статус 3)
+    available_statuses = [status for status in range(2, 6) if status != 3]
+
     for _ in range(30):
         requisition = Requisition.objects.create()
         requisition.name = "Заявка №" + str(requisition.pk)
-        requisition.status = random.randint(2, 5)
+        requisition.status = random.choice(available_statuses)  # Выбираем статус из доступных
 
-        if requisition.status in [3, 4]:
+        if requisition.status in [4, 5]:  # Для статусов "Отменён" и "Удалён"
             if requisition.status == 4:
                 requisition.date_complete = None
             else:
