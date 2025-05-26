@@ -123,7 +123,7 @@ def add_requisitions():
     # Все статусы, кроме "Завершен" (статус 3)
     available_statuses = [status for status in range(2, 6) if status != 3]
 
-    for _ in range(30):
+    for _ in range(20):
         requisition = Requisition.objects.create()
         requisition.name = "Заявка №" + str(requisition.pk)
         requisition.status = random.choice(available_statuses)  # Выбираем статус из доступных
