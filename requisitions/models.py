@@ -106,6 +106,8 @@ class Requisition(models.Model):
     companies = models.ManyToManyField(Company, verbose_name="Компании", null=True)
     report = models.FileField(upload_to='reports/', blank=True, null=True, verbose_name="Отчет")
 
+    comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
+    
     def __str__(self):
         return self.name
 

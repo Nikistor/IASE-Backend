@@ -74,6 +74,7 @@ class Migration(migrations.Migration):
                 ('date_complete', models.DateTimeField(blank=True, null=True, verbose_name='Дата завершения')),
                 ('report', models.FileField(blank=True, null=True, upload_to='reports/', verbose_name='Отчет')),
                 ('companies', models.ManyToManyField(null=True, to='requisitions.company', verbose_name='Компании')),
+                ('comment', models.TextField(blank=True, null=True, verbose_name='Комментарий')),
                 ('employer', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='employer', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
                 ('moderator', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='moderator', to=settings.AUTH_USER_MODEL, verbose_name='Админ')),
             ],

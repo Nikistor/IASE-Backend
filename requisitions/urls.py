@@ -17,7 +17,6 @@ urlpatterns = [
     path("api/requisitions/search/", get_requisitions),  # GET
     path("api/requisitions/<int:requisition_id>/", get_requisition_by_id),  # GET
     path("api/requisitions/<int:requisition_id>/update/", update_requisition),  # PUT/PATCH
-    path("api/requisitions/<int:requisition_id>/update_bankrupt/",update_requisition_bankrupt,),  # POST
     path("api/requisitions/<int:requisition_id>/update_status_user/", update_status_user),  # PUT
     path("api/requisitions/<int:requisition_id>/update_status_admin/",update_status_admin,),  # PUT
     path("api/requisitions/<int:requisition_id>/delete/", delete_requisition),  # DELETE
